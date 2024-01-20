@@ -11,7 +11,8 @@ def crop_images(
                 path_to_imgs: str, 
                 path_to_save: str,
                 path_to_anns = None,
-                crop_size: int = 500):
+                crop_size: int = 500,
+                stride:bool = False):
     '''
     Images in original format are of shape (more or less) 21000x2000. The central 
     ares is the only one of interest, so we crop each image into vertical
@@ -44,13 +45,13 @@ def crop_images(
         ann_path = os.path.join(path_to_anns, ann_name)
 
         cur_list.append(    
-            crop(img_path, img_id, os.path.join(path_to_save, "img"), crop_size)
+            crop(img_path, img_id, os.path.join(path_to_save, "img"), crop_size,stride)
         )
 
-        crop(ann_path, img_id, os.path.join(path_to_save, "ann"), crop_size)
+        crop(ann_path, img_id, os.path.join(path_to_save, "ann"), crop_size,stride)
 
 
-def crop(image_path, img_id, save_path, crop_size):
+def crop(image_path, img_id, save_path, crop_size,stride):
    
     if isinstance(crop_size, tuple):
         sub_image_height, sub_image_width = crop_size
@@ -70,13 +71,17 @@ def crop(image_path, img_id, save_path, crop_size):
         
         image_crop = img[y:y+sub_image_height, x:x+sub_image_width]
         
-        y += 500
+
         crop_number += 1
         id_sub_image = img_id + '_' + str(crop_number).zfill(3)
         curated_list.append(id_sub_image)
         img_name = os.path.join(save_path,id_sub_image + '.png')
-        
         cv2.imwrite(img_name, image_crop)
+
+        if stride:
+            y += sub_image_height // 2  # Apply stride of half the image height
+        else:
+            y += sub_image_height  # Move 500 pixels down
 
     return curated_list
 
@@ -134,7 +139,9 @@ def main(
         dataset_name: str,
         crop_size: int = 500,
         diversify_string: bool = True,
-        ref_imgs: bool = False
+        ref_imgs: bool = False,
+        stride:bool =False,
+        train_size: float = 0.6
         ):
     
     path_to_crops = os.path.join("crops") 
@@ -158,16 +165,16 @@ def main(
         )
 
         # Crop images and annotations in vertical patches
-        crop_images(path_to_imgs, path_to_crops, ann_imgs_path, crop_size=crop_size)
+        crop_images(path_to_imgs, path_to_crops, ann_imgs_path, crop_size=crop_size, stride=stride)
         
     else: # Images are copied as annotations to keep the same folder structure of CAUSE
-        crop_images(path_to_imgs, path_to_crops, None, crop_size=crop_size)
+        crop_images(path_to_imgs, path_to_crops, None, crop_size=crop_size,stride=stride)
 
     # Create the folder structure for the images and annotations complying with the CAUSE dataset structure
     path_tree_generator(dataset_name)  
 
     # Reorganize images and annotations in train val folders
-    split_crops(path_to_crops, dataset_name, train_size=0.6) 
+    split_crops(path_to_crops, dataset_name, train_size=train_size)
 
     # Remove crops
     shutil.rmtree(path_to_crops)
@@ -217,6 +224,14 @@ if __name__ == '__main__':
                     help="if true the images names are changed to the format id_nameimg.png \
                           note that this is necessary if your images are not like this"
     )
+
+    parser.add_argument("--stride", default= False,
+                        help="if true when cropping the images we use a stride of 250px."
+    )
+
+    parser.add_argument("--train_size", default=0.6,type=float,
+                        help="train size for the split of the dataset."
+    )
     
     args = parser.parse_args()
 
@@ -227,5 +242,7 @@ if __name__ == '__main__':
         args.dataset_name, # folder where to save images 
         args.crop_size,
         args.diversify_string,
-        args.reformat_imgs
+        args.reformat_imgs,
+        args.stride,
+        args.train_size
     )
