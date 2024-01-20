@@ -21,7 +21,7 @@ def crop_images(
     :param path_to_imgs: path to folder with images.
     :param path_to_anns: path to folder with annotations.
     :param path_to_save: path to folder where to save cropped images and annotations.
-    :param new_size: size of the cropped images.
+    :stride: if true when cropping the images we use a stride of 250px.
 
     '''
     if path_to_anns is None:
@@ -97,9 +97,7 @@ def split_crops(
 
     :param path_to_cropped: path to folder with cropped images and annotations.
     :param path_to_save   : path to folder where to save cropped images and annotations.
-    :param by_original    : If true, we split at the original image level, otherwise 
-                            we split at the cropped image level.
-
+    :param train_size     : train size for the split of the dataset.
     '''
 
     imgs_path = os.path.join(path_to_cropped, "img")
@@ -229,7 +227,7 @@ if __name__ == '__main__':
                         help="if true when cropping the images we use a stride of 250px."
     )
 
-    parser.add_argument("--train_size", default=0.6,type=float,
+    parser.add_argument("--train_size", default=0.6, type=float,
                         help="train size for the split of the dataset."
     )
     
