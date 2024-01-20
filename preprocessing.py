@@ -212,11 +212,10 @@ if __name__ == '__main__':
     )
 
     parser.add_argument(
-                    "--diversify_string", default=True,
-                    help="if True, then the class 'Writing normale' will be different from \
-                          'Writing zigrinato', otherwise they will be the same."
+                    "--diversify_string",
+                    action="store_true",
+                    help="If present, then the class 'Writing normale' will be different from 'Writing zigrinato'; otherwise, they will be the same."
     )
-
     parser.add_argument(
                     "--reformat_imgs", default=False,
                     help="if true the images names are changed to the format id_nameimg.png \

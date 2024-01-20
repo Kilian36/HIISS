@@ -28,7 +28,6 @@ def parse_annotations(
     :return: None 
 
     '''
-
     with open(path_to_json, 'r') as file:
         coco_data = json.load(file)
 
@@ -37,8 +36,8 @@ def parse_annotations(
         os.makedirs(os.path.join(path_to_save, "anns_image"))
         os.makedirs(os.path.join(path_to_save, "anns"))
 
-    imgs = [cv2.imread(os.path.join(path_to_imgs, image_path)) for image_path in os.listdir(path_to_imgs)]
-    anns = [np.zeros(img.shape[:2]) for img in imgs] # Zero initialized segmentation arrays (background)
+    imgs = {image_path: cv2.imread(os.path.join(path_to_imgs, image_path)) for image_path in sorted(os.listdir(path_to_imgs))}
+    anns = {img_name: np.zeros(img.shape[:2]) for img_name,img in imgs.items()} # Zero initialized segmentation arrays (background)
 
     i = 0
     for annotation in coco_data['annotations']:
@@ -65,15 +64,20 @@ def parse_annotations(
         # Create segmentation mask
         rles = mask.frPyObjects(segmentation, coco_data['images'][image_id]['height'], coco_data['images'][image_id]['width'])
         mask_array = mask.decode(rles).squeeze()
+        image_name = coco_data['images'][image_id]['file_name'].split("\\")[-1]
 
-        mask_ids = np.argwhere(mask_array > anns[image_id])
-
+        for img_name,img in anns.items():
+            if image_name in img_name:
+                anns_img = img
+                img_idx = img_name
+                break
+        mask_ids = np.argwhere(mask_array > anns_img)
         mask_idsx = mask_ids[:, 0] 
         mask_idsy = mask_ids[:, 1]
 
         # Apply the color to the image based on the segmentation mask
-        imgs[image_id][mask_idsx, mask_idsy] = color
-        anns[image_id][mask_idsx, mask_idsy] = class_id
+        imgs[img_idx][mask_idsx, mask_idsy] = color
+        anns[img_idx][mask_idsx, mask_idsy] = class_id
         
         if (i + 1) % 50 == 0:
             print(f"Annotations {i}, image {image_id}")  
@@ -81,9 +85,9 @@ def parse_annotations(
         
     
     # Save annotated images
-    for i, (img, ann) in enumerate(zip(imgs, anns)):
-        cv2.imwrite(os.path.join(path_to_save, "anns_image", f"{i}_.png"), img)
-        cv2.imwrite(os.path.join(path_to_save, "anns", f"{i}_.png"), ann)
+    for img, annot in zip(imgs.items(), anns.items()):
+        cv2.imwrite(os.path.join(path_to_save, "anns_image", f"{img[0].split('_')[0]}_.png"), img[1])
+        cv2.imwrite(os.path.join(path_to_save, "anns", f"{annot[0].split('_')[0]}_.png"), annot[1])
 
 
 def path_tree_generator(path_to_imgs):
