@@ -222,7 +222,8 @@ if __name__ == '__main__':
                           note that this is necessary if your images are not like this"
     )
 
-    parser.add_argument("--stride", default= False,
+    parser.add_argument("--stride",
+                        action="store_true",
                         help="if true when cropping the images we use a stride of 250px."
     )
 
@@ -231,7 +232,7 @@ if __name__ == '__main__':
     )
     
     args = parser.parse_args()
-
+    
     main(
         args.path_to_json, # annotations file
         args.path_to_imgs, # images folder

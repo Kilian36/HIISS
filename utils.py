@@ -56,6 +56,7 @@ def parse_annotations(
                 color = (0, 255, 0) # Green
             else: # Writings converge to the same class
                 class_id = 2
+                color = (0, 0, 255)
 
         elif category == 2: # "Zigrinato generico"
             class_id = 1
@@ -71,7 +72,7 @@ def parse_annotations(
                 anns_img = img
                 img_idx = img_name
                 break
-        mask_ids = np.argwhere(mask_array > anns_img)
+        mask_ids = np.argwhere((mask_array*class_id) > anns_img)
         mask_idsx = mask_ids[:, 0] 
         mask_idsy = mask_ids[:, 1]
 
@@ -86,6 +87,7 @@ def parse_annotations(
     
     # Save annotated images
     for img, annot in zip(imgs.items(), anns.items()):
+        print(f"I am saving as {img[0].split('_')[0]} the image {img[0]}{annot[0]}")
         cv2.imwrite(os.path.join(path_to_save, "anns_image", f"{img[0].split('_')[0]}_.png"), img[1])
         cv2.imwrite(os.path.join(path_to_save, "anns", f"{annot[0].split('_')[0]}_.png"), annot[1])
 
