@@ -1,6 +1,6 @@
 # Pirelli Tyre Semantic Segmentation with CAUSE
-This repository contains the implementation of semi-unsupervised semantic segmentation on Pirelli tyres using the [CAUSE(Causal-Unsupervised-Segmentation
-)](https://github.com/byungkwanlee/causal-unsupervised-segmentation) framework [1].
+This repository contains the implementation of semi-unsupervised semantic segmentation on Pirelli tyres using the [CAUSE (Causal-Unsupervised-Segmentation
+)](https://github.com/byungkwanlee/causal-unsupervised-segmentation) [1].
 
  The primary objective of this work was to segment different types of text written on Pirelli tyres, given the challenge of having limited labeled images and a substantial amount of unlabeled images.
 
